@@ -1,0 +1,38 @@
+ffmpeg:
+  path: "C:\\Users\\Think\\Desktop\\qingxun\\ffmpeg.exe"
+
+spring:
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    username: sandaiyidui
+#    password: qingxun
+#    url: jdbc:mysql://124.223.112.154/douyin?characterEncoding=utf-8&useSSL=false
+
+  redis:
+    Host: localhost # redis server address
+    Database: 2 # redis database index (default is 0)
+    Port: 6379 # redis server connection port
+    Password: # redis server connection password (empty by default)
+    Timeout: 1000ms # connection timeout
+  jackson:
+    default-property-inclusion: non_null
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: tanm146
+    url: jdbc:mysql://127.0.0.1/douyin?characterEncoding=utf-8&useSSL=false
+  mvc:
+    static-path-pattern: /static/**
+  servlet:
+    multipart:
+      max-file-size: 20MB
+
+server:
+  port: 8080
+  error:
+    include-message: always
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
