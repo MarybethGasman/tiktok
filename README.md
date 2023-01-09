@@ -3,7 +3,7 @@
 ![img.png](docs/img.png)
 
 ## 本地测试
-在配置文件中（application-xxx.yaml) 配置数据库和ffmpeg路径(在docs目录下有可供使用的ffmepg.exe)
+在配置文件中（application-xxx.yaml) 配置数据库和ffmpeg路径(自备ffmepg.exe)
 
 
 ## 接口文档
