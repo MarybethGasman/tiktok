@@ -2,6 +2,7 @@ package org.tm.po;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.io.Serializable;
 import java.util.Date;
 
 public class CommentPO {
@@ -9,6 +10,18 @@ public class CommentPO {
     private Long commentId;
 
     private Long userId;
+
+    @Override
+    public String toString() {
+        return "CommentPO{" +
+                "commentId=" + commentId +
+                ", userId=" + userId +
+                ", videoId=" + videoId +
+                ", content='" + content + '\'' +
+                ", createTime=" + createTime +
+                ", isDeleted=" + isDeleted +
+                '}';
+    }
 
     private Long videoId;
 

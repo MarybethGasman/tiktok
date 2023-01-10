@@ -3,7 +3,9 @@ package org.tm.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class VideoDTO {
+import java.io.Serializable;
+
+public class VideoDTO implements Serializable {
     private Long id;
 
     private UserDTO author;

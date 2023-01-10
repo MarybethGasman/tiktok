@@ -1,6 +1,5 @@
 package org.tm.po;
 
-import org.tm.dto.UserDTO;
 
 public class VideoPO {
     private Long videoId;
@@ -72,5 +71,18 @@ public class VideoPO {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    @Override
+    public String toString() {
+        return "VideoPO{" +
+                "videoId=" + videoId +
+                ", userId=" + userId +
+                ", playUrl='" + playUrl + '\'' +
+                ", coverUrl='" + coverUrl + '\'' +
+                ", favoriteCount=" + favoriteCount +
+                ", commentCount=" + commentCount +
+                ", title='" + title + '\'' +
+                '}';
     }
 }

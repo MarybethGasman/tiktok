@@ -3,8 +3,8 @@
 ![img.png](docs/img.png)
 
 ## 本地测试
-在配置文件中（application-xxx.yaml) 配置数据库和ffmpeg路径(自备ffmepg.exe)
-
+- 在配置文件中（application-xxx.yaml)配置mysql、redis以及ffmpeg路径(自备ffmepg.exe)
+- 需要装好mysql8和redis
 
 ## 接口文档
 [地址](https://www.apifox.cn/apidoc/shared-8cc50618-0da6-4d5e-a398-76f3b8f766c5/api-18902517)
