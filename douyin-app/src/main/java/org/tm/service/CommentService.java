@@ -3,10 +3,8 @@ package org.tm.service;
 
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
-import org.tm.dto.CommentDTO;
-import org.tm.dto.CommentResponse;
-import org.tm.dto.UserDTO;
-import org.tm.po.CommentPO;
+import org.tm.pojo.Comment;
+import org.tm.pojo.User;
 import org.tm.repository.CommentRepository;
 import org.tm.repository.RelationRepository;
 import org.tm.repository.UserRepository;
@@ -36,40 +34,31 @@ public class CommentService {
         this.relationRepository = relationRepository;
     }
 
-    public CommentResponse addComment(CommentPO commentPO) {
-        CommentResponse response = new CommentResponse();
-
-        Long userId = commentPO.getUserId();
-        UserDTO speaker = userRepository.selectUserById(userId);
-
+    public void addComment(Comment comment) {
+        Long userId = comment.getUser().getUserId();
+        User speaker = userRepository.selectUserById(userId);
+        comment.setUser(speaker);
         try {
-            commentRepository.insert(commentPO);
+            commentRepository.insert(comment);
         }catch (DuplicateKeyException e) {
-            commentRepository.updateIsDeleted(commentPO,false);
+            // FIXME: 2023/1/19 comment.commentId 为 null
+            commentRepository.updateIsDeleted(comment,false);
         }
-        Long videoId = commentPO.getVideoId();
+        Long videoId = comment.getVideoId();
         videoRepository.addCommentCount(videoId, 1);
-
-        response.setComment(new CommentDTO(
-                commentPO.getCommentId(),
-                speaker,
-                commentPO.getContent(),
-                commentPO.getCreateTime()
-        ));
-        return response;
     }
 
-    public void removeComment(CommentPO commentPO) {
-        Long videoId = commentPO.getVideoId();
+    public void removeComment(Comment comment) {
+        Long videoId = comment.getVideo().getId();
 
-        commentRepository.updateIsDeleted(commentPO,true);
-        videoRepository.addFavoriteCount(videoId, -1);
+        commentRepository.updateIsDeleted(comment,true);
+        videoRepository.addCommentCount(videoId, -1);
 
     }
 
-    public List<CommentDTO> queryVideoCommentList(Long userId, Long videoId) {
+    public List<Comment> queryVideoCommentList(Long userId, Long videoId) {
 
-        List<CommentDTO> commentDTOList =
+        List<Comment> commentList =
                 commentRepository.selectCommentListByVideoId(videoId);
 
         if(userId != null) {
@@ -77,12 +66,13 @@ public class CommentService {
                     Optional.ofNullable(relationRepository.getFollowingUserIdList(userId))
                             .orElse(new ArrayList<>());
 
-            commentDTOList = commentDTOList.stream().map((commentDTO -> {
-                UserDTO speaker = commentDTO.getUser();
-                speaker.setFollow(followingIdList.contains(speaker.getUserId()));
-                return commentDTO;
+            commentList = commentList.stream().map((comment -> {
+                User speaker = comment.getUser();
+                speaker.setIsFollow(followingIdList.contains(speaker.getUserId()));
+                comment.setVideo(null);
+                return comment;
             })).collect(Collectors.toList());
         }
-        return commentDTOList;
+        return commentList;
     }
 }

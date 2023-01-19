@@ -8,8 +8,8 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tm.dto.UserDTO;
 import org.tm.exception.AuthorizationFailedException;
+import org.tm.pojo.User;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -31,7 +31,7 @@ public class JwtUtil {
     /**
      * 生成用户token,设置token超时时间
      */
-    public static String createToken(UserDTO user) {
+    public static String createToken(User user) {
         //过期时间
         Date expireDate = new Date(System.currentTimeMillis() + EXPIRATION * 1000);
         Map<String, Object> map = new HashMap<>();

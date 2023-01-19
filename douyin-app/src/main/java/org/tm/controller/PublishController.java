@@ -1,15 +1,14 @@
 package org.tm.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.ResourceUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.tm.dto.Response;
-import org.tm.dto.VideoDTO;
-import org.tm.dto.VideoListResponse;
-import org.tm.po.VideoPO;
+import org.tm.pojo.Response;
+import org.tm.pojo.Video;
 import org.tm.service.VideoService;
 import org.tm.util.JwtUtil;
 import org.tm.util.FfmpegUtil;
@@ -26,6 +25,8 @@ public class PublishController {
 
     private final VideoService videoService;
 
+    @Value("${video.base}")
+    private String videoBaseUrI;
 
     public PublishController(VideoService videoService) {
         this.videoService = videoService;
@@ -52,41 +53,40 @@ public class PublishController {
 
 
         String coverUrl = fileName.substring(0,fileName.lastIndexOf(".")) + ".jpg";
-        VideoPO videoPO = new VideoPO();
-        videoPO.setTitle(title);
-        videoPO.setPlayUrl(fileName);
-        videoPO.setCoverUrl(coverUrl);
-        videoPO.setUserId(userId);
+        Video video = new Video();
+        video.setTitle(title);
+        video.setPlayUrl(fileName);
+        video.setCoverUrl(coverUrl);
+        video.setUserId(userId);
 
         FfmpegUtil.getCoverUrl(filePath);
-        videoService.addVideo(videoPO);
+        videoService.addVideo(video);
 
-        return new Response(0,"上传成功");
+        return Response.success();
     }
 
     @RequestMapping("/list")
-    public VideoListResponse GetPublishVideoList(@RequestParam("token") String token,
+    public Response GetPublishVideoList(@RequestParam("token") String token,
                                                  @RequestParam("user_id") Long userId) {
         Long viewerId = null;
         if(StringUtils.hasLength(token)) {
             viewerId = JwtUtil.getUserId(token);
         }
 
-        List<VideoDTO> videoDTOList =
+        List<Video> videoList =
                 videoService.getPublishVideoList(userId, viewerId);
 
-        String baseUrl = "http://124.223.112.154:9091/static/";
+        videoList = videoList.stream().map((video -> {
+            String coverUrl = video.getCoverUrl();
+            String playUrl = video.getPlayUrl();
 
-        videoDTOList = videoDTOList.stream().map((videoDTO -> {
-            String coverUrl = videoDTO.getCoverUrl();
-            String playUrl = videoDTO.getPlayUrl();
-
-            videoDTO.setCoverUrl(baseUrl + coverUrl);
-            videoDTO.setPlayUrl(baseUrl + playUrl);
-            return videoDTO;
+            video.setCoverUrl(videoBaseUrI + coverUrl);
+            video.setPlayUrl(videoBaseUrI + playUrl);
+            return video;
         })).collect(Collectors.toList());
 
-        return new VideoListResponse(new Response(0,"请求成功")
-                ,null,videoDTOList);
+        Response response = Response.success();
+        response.put("video_list", videoList);
+        return response;
     }
 }

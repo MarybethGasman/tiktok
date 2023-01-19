@@ -2,9 +2,8 @@ package org.tm.service;
 
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
-import org.tm.dto.UserDTO;
-import org.tm.po.FavoritePO;
-import org.tm.po.RelationPO;
+import org.tm.pojo.Relation;
+import org.tm.pojo.User;
 import org.tm.repository.RelationRepository;
 import org.tm.repository.UserRepository;
 
@@ -29,13 +28,13 @@ public class RelationService {
         return Optional.ofNullable(relationRepository.selectFollowStatus(userAId, userBId));
     }
 
-    public List<UserDTO> QueryFollowList(Long userId, Long viewerId) {
+    public List<User> QueryFollowList(Long userId, Long viewerId) {
 
         List<Long> followingUserIdList =
                 Optional.ofNullable(relationRepository.getFollowingUserIdList(viewerId))
                         .orElse(new ArrayList<>());
 
-        List<UserDTO> userDTOList = userRepository
+        List<User> userList = userRepository
                 .selectUserListByUserIdList(followingUserIdList);
 
         if(viewerId != null) {
@@ -43,19 +42,19 @@ public class RelationService {
                     Optional.ofNullable(relationRepository.getFollowingUserIdList(viewerId))
                             .orElse(new ArrayList<>());
 
-            userDTOList = userDTOList.stream().map((userDTO -> {
-                userDTO.setFollow(followingIdList.contains(userDTO.getUserId()));
-                return userDTO;
+            userList = userList.stream().map((user -> {
+                user.setIsFollow(followingIdList.contains(user.getUserId()));
+                return user;
             })).collect(Collectors.toList());
         }
-        return userDTOList;
+        return userList;
     }
 
-    public List<UserDTO> QueryFollowerList(Long userId, Long viewerId) {
+    public List<User> QueryFollowerList(Long userId, Long viewerId) {
         List<Long> followerUserIdList =
                 relationRepository.getFollowerUserIdList(userId);
 
-        List<UserDTO> userDTOList = userRepository
+        List<User> userList = userRepository
                 .selectUserListByUserIdList(followerUserIdList);
 
         if(viewerId != null) {
@@ -63,24 +62,24 @@ public class RelationService {
                     Optional.ofNullable(relationRepository.getFollowingUserIdList(viewerId))
                             .orElse(new ArrayList<>());
 
-            userDTOList = userDTOList.stream().map((userDTO -> {
-                userDTO.setFollow(followingIdList.contains(userDTO.getUserId()));
-                return userDTO;
+            userList = userList.stream().map((user -> {
+                user.setIsFollow(followingIdList.contains(user.getUserId()));
+                return user;
             })).collect(Collectors.toList());
         }
-        return userDTOList;
+        return userList;
     }
 
     public void addRelation(Long userId, Long toUserId) {
 
-        RelationPO relationPO = new RelationPO();
-        relationPO.setFollowerId(userId);
-        relationPO.setFolloweeId(toUserId);
+        Relation relation = new Relation();
+        relation.setFollowerId(userId);
+        relation.setFolloweeId(toUserId);
 
         try {
-            relationRepository.insert(relationPO);
+            relationRepository.insert(relation);
         }catch (DuplicateKeyException e) {
-            relationRepository.updateIsDeleted(relationPO,false);
+            relationRepository.updateIsDeleted(relation,false);
         }
         //增加关注数
         userRepository.addFollowCount(userId, 1);
@@ -89,11 +88,11 @@ public class RelationService {
     }
 
     public void removeRelation(Long userId, Long toUserId) {
-        RelationPO relationPO = new RelationPO();
-        relationPO.setFollowerId(userId);
-        relationPO.setFolloweeId(toUserId);
+        Relation relation = new Relation();
+        relation.setFollowerId(userId);
+        relation.setFolloweeId(toUserId);
 
-        relationRepository.updateIsDeleted(relationPO,true);
+        relationRepository.updateIsDeleted(relation,true);
         //减少关注数
         userRepository.addFollowCount(userId, -1);
 

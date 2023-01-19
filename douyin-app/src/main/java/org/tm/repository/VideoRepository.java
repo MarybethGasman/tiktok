@@ -5,8 +5,7 @@ import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.mapping.FetchType;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.tm.dto.VideoDTO;
-import org.tm.po.VideoPO;
+import org.tm.pojo.Video;
 
 import java.util.List;
 
@@ -40,8 +39,8 @@ public interface VideoRepository {
                     " order by create_date desc" +
                     " limit 20" +
             "")
-    @Cacheable(value = "videos", key = "#root.target.CACHE_KEY")
-    List<VideoDTO> GetListSortedByCreateTime(String latestTime);
+
+    List<Video> GetListSortedByCreateTime(String latestTime);
 
     @Update("update video set favorite_count = favorite_count + #{i} " +
             "where video_id = #{videoId}")
@@ -51,7 +50,7 @@ public interface VideoRepository {
     @CacheEvict(value = "videos", key = "#root.target.CACHE_KEY")
     @Insert("insert into video(user_id,play_url,cover_url,title) " +
             "values(#{userId},#{playUrl},#{coverUrl},#{title})")
-    void save(VideoPO videoPO);
+    void save(Video video);
 
 
     @Results(value = {
@@ -71,7 +70,7 @@ public interface VideoRepository {
             "(-1)" +
             "</if>" +
             "</script> ")
-    List<VideoDTO> selectVideoListByVideoIdList(List<Long> videoIdList);
+    List<Video> selectVideoListByVideoIdList(List<Long> videoIdList);
 
 
     @Results(value = {
@@ -84,7 +83,7 @@ public interface VideoRepository {
             "favorite_count as favoriteCount, comment_count as commentCount,title " +
             "from video where user_id = #{userId} ")
     @Cacheable("publish_videos")
-    List<VideoDTO> getPublishVideoList(Long userId);
+    List<Video> getPublishVideoList(Long userId);
 
 
     @Update("update video set comment_count = comment_count + #{i} " +

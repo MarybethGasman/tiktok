@@ -4,10 +4,9 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import org.tm.po.RelationPO;
+import org.tm.pojo.Relation;
 
 import java.util.List;
-import java.util.Optional;
 
 @Mapper
 public interface RelationRepository {
@@ -23,10 +22,10 @@ public interface RelationRepository {
 
     @Insert("insert into relation(follower_id, followee_id) " +
             "values(#{followerId},#{followeeId})")
-    void insert(RelationPO relationPO);
+    void insert(Relation relation);
 
     @Update("update relation set is_deleted = #{isDeleted}")
-    void updateIsDeleted(RelationPO relationPO, boolean isDeleted);
+    void updateIsDeleted(Relation relation, boolean isDeleted);
 
     @Select("select follower_id from relation " +
             "where followee_id = #{userId} and is_deleted = 0")

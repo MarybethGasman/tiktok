@@ -1,11 +1,9 @@
 package org.tm.repository;
 
 import org.apache.ibatis.annotations.*;
-import org.tm.dto.UserDTO;
-import org.tm.po.UserPO;
+import org.tm.pojo.User;
 
 import java.util.List;
-import java.util.Optional;
 
 @Mapper
 public interface UserRepository {
@@ -18,23 +16,23 @@ public interface UserRepository {
     @Results(id = "userMap",value = {
             @Result(property = "username", column = "name"),
     })
-    @ResultType(UserDTO.class)
+    @ResultType(User.class)
     @Select("select user_id,name,password from user where name = #{username}")
-    UserDTO selectUserBy(String username);
+    User selectUserBy(String username);
 
     /**
      * 新增一个用户
-     * @param userPO
+     * @param user
      */
     @Insert("insert into user(name,password) values(#{username},#{password})")
     @Options(useGeneratedKeys = true, keyProperty = "userId", keyColumn = "user_id")
-    void insertUser(UserPO userPO);
+    void insertUser(User user);
 
 
     @ResultMap("userMap")
     @Select("select user_id,name,follow_count,follower_count from user " +
             "where user_id = #{id}")
-    UserDTO selectUserById(Long id);
+    User selectUserById(Long id);
 
     @ResultMap("userMap")
     @Select("<script> " +
@@ -47,7 +45,7 @@ public interface UserRepository {
             "(-1)" +
             "</if>" +
             "</script> ")
-    List<UserDTO> selectUserListByUserIdList(List<Long> userIdList);
+    List<User> selectUserListByUserIdList(List<Long> userIdList);
 
     @Update("update user set follow_count = follow_count + #{i} " +
             "where user_id = #{userId}")

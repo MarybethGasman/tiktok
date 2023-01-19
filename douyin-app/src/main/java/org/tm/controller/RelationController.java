@@ -5,9 +5,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.tm.dto.Response;
-import org.tm.dto.UserDTO;
-import org.tm.dto.UserListResponse;
+import org.tm.pojo.Response;
+import org.tm.pojo.User;
 import org.tm.service.RelationService;
 import org.tm.util.JwtUtil;
 
@@ -25,8 +24,8 @@ public class RelationController {
     }
 
     @RequestMapping(value = "/follow/list",method = RequestMethod.GET)
-    public UserListResponse getFollowList(@RequestParam("user_id") Long userId,
-                                          @RequestParam("token") String token) {
+    public Response getFollowList(@RequestParam("user_id") Long userId,
+                                              @RequestParam("token") String token) {
 
         Long viewerId = null;
 
@@ -34,13 +33,15 @@ public class RelationController {
             viewerId = JwtUtil.getUserId(token);
         }
 
-        List<UserDTO> userDTOList = relationService.QueryFollowList(userId, viewerId);
+        List<User> userDTOList = relationService.QueryFollowList(userId, viewerId);
 
-        return new UserListResponse(new Response(0,"查询成功"),userDTOList);
+        Response response = Response.success();
+        response.put("user_list", userDTOList);
+        return response;
     }
 
     @RequestMapping(value = "/follower/list",method = RequestMethod.GET)
-    public UserListResponse getFollowerList(@RequestParam("user_id") Long userId,
+    public Response getFollowerList(@RequestParam("user_id") Long userId,
                                           @RequestParam("token") String token) {
 
         Long viewerId = null;
@@ -49,9 +50,11 @@ public class RelationController {
             viewerId = JwtUtil.getUserId(token);
         }
 
-        List<UserDTO> userDTOList = relationService.QueryFollowerList(userId, viewerId);
+        List<User> userDTOList = relationService.QueryFollowerList(userId, viewerId);
 
-        return new UserListResponse(new Response(0,"查询成功"),userDTOList);
+        Response response = Response.success();
+        response.put("user_list", userDTOList);
+        return response;
     }
 
     @RequestMapping(value = "/action",method = RequestMethod.POST)
@@ -70,9 +73,8 @@ public class RelationController {
                 break;
             default:break;
         }
-        Response response = new Response(0,"操作成功");
+        Response response = Response.success();
         return response;
-
     }
 
 

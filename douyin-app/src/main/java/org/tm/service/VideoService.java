@@ -1,10 +1,8 @@
 package org.tm.service;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.tm.dto.UserDTO;
-import org.tm.dto.VideoDTO;
-import org.tm.po.VideoPO;
+import org.tm.pojo.User;
+import org.tm.pojo.Video;
 import org.tm.repository.FavoriteRepository;
 import org.tm.repository.RelationRepository;
 import org.tm.repository.VideoRepository;
@@ -27,9 +25,9 @@ public class VideoService {
         this.relationRepository = relationRepository;
     }
 
-    public List<VideoDTO> getAllVideoList(String latestTime, Long userId) {
+    public List<Video> getAllVideoList(String latestTime, Long userId) {
 
-        List<VideoDTO> videoList = videoRepository.GetListSortedByCreateTime(latestTime);
+        List<Video> videoList = videoRepository.GetListSortedByCreateTime(latestTime);
 
         if(userId != null) {
             final List<Long> favoriteVideoIdList =
@@ -39,11 +37,11 @@ public class VideoService {
                     Optional.ofNullable(relationRepository.getFollowingUserIdList(userId))
                             .orElse(new ArrayList<>());
 
-            videoList = videoList.stream().map((videoDTO -> {
-                videoDTO.setFavorite(favoriteVideoIdList.contains(videoDTO.getId()));
-                UserDTO author = videoDTO.getAuthor();
-                author.setFollow(followingIdList.contains(author.getUserId()));
-                return videoDTO;
+            videoList = videoList.stream().map((video -> {
+                video.setIsFavorite(favoriteVideoIdList.contains(video.getId()));
+                User author = video.getAuthor();
+                author.setIsFollow(followingIdList.contains(author.getUserId()));
+                return video;
             })).collect(Collectors.toList());
         }
 
@@ -51,13 +49,13 @@ public class VideoService {
 
     }
 
-    public void addVideo(VideoPO videoPO) {
-        videoRepository.save(videoPO);
+    public void addVideo(Video video) {
+        videoRepository.save(video);
     }
 
-    public List<VideoDTO> getPublishVideoList(Long userId, Long viewerId) {
+    public List<Video> getPublishVideoList(Long userId, Long viewerId) {
 
-        List<VideoDTO> publishVideoList =
+        List<Video> publishVideoList =
                 videoRepository.getPublishVideoList(userId);
 
         if(viewerId != null) {
@@ -68,11 +66,11 @@ public class VideoService {
             final List<Long> viewerFavoriteVideoIdList =
                     favoriteRepository.getFavoriteVideoIdList(viewerId);
 
-            publishVideoList = publishVideoList.stream().map((videoDTO -> {
-                videoDTO.setFavorite(viewerFavoriteVideoIdList.contains(videoDTO.getId()));
-                UserDTO author = videoDTO.getAuthor();
-                author.setFollow(followingIdList.contains(author.getUserId()));
-                return videoDTO;
+            publishVideoList = publishVideoList.stream().map((video -> {
+                video.setIsFavorite(viewerFavoriteVideoIdList.contains(video.getId()));
+                User author = video.getAuthor();
+                author.setIsFollow(followingIdList.contains(author.getUserId()));
+                return video;
             })).collect(Collectors.toList());
         }
         return publishVideoList;

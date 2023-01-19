@@ -1,14 +1,14 @@
 package org.tm.controller;
 
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.tm.dto.Response;
-import org.tm.dto.VideoDTO;
-import org.tm.dto.VideoListResponse;
+import org.tm.pojo.Response;
+import org.tm.pojo.Video;
 import org.tm.repository.RelationRepository;
 import org.tm.service.FavoriteService;
 import org.tm.service.VideoService;
@@ -21,15 +21,17 @@ import java.util.stream.Collectors;
 @RequestMapping("douyin/feed")
 public class VideoController {
 
+    @Value("${video.base}")
+    private String videoBaseUrI;
+
     private final VideoService videoService;
     public VideoController(VideoService videoService, FavoriteService favoriteService, RelationRepository relationRepository) {
         this.videoService = videoService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public VideoListResponse getAllVideoList(@RequestParam(value = "latest_time", required = false) String time,
-                                             @RequestParam(value = "token", required = false) String token) {
-
+    public Response getAllVideoList(@RequestParam(value = "latest_time", required = false) String time,
+                                                @RequestParam(value = "token", required = false) String token) {
         if (time == null) {
             time = Long.toString(System.currentTimeMillis()/1000L);
         }
@@ -39,23 +41,22 @@ public class VideoController {
             userId = JwtUtil.getUserId(token);
         }
 
-        List<VideoDTO> videoList;
+        List<Video> videoList;
         videoList = videoService.getAllVideoList(time, userId);
 
-        String baseUrl = "http://124.223.112.154:9091/static/";
+        videoList = videoList.stream().map((video -> {
+            String coverUrl = video.getCoverUrl();
+            String playUrl = video.getPlayUrl();
 
-        videoList = videoList.stream().map((videoDTO -> {
-            String coverUrl = videoDTO.getCoverUrl();
-            String playUrl = videoDTO.getPlayUrl();
+            video.setCoverUrl(videoBaseUrI + coverUrl);
+            video.setPlayUrl(videoBaseUrI + playUrl);
 
-            videoDTO.setCoverUrl(baseUrl + coverUrl);
-            videoDTO.setPlayUrl(baseUrl + playUrl);
-            return videoDTO;
+            return video;
         })).collect(Collectors.toList());
 
-        VideoListResponse result = new
-                VideoListResponse(new Response(0, "请求成功"),
-                1655973624, videoList);
+        Response result = Response.success();
+        result.put("next_time", 0);
+        result.put("video_list", videoList);
 
         return result;
     }

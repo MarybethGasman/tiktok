@@ -3,11 +3,9 @@ package org.tm.controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import org.tm.dto.Response;
-import org.tm.dto.UserDTO;
-import org.tm.dto.UserLoginResponse;
-import org.tm.dto.UserResponse;
+import org.tm.pojo.Response;
 import org.tm.exception.ParameterInvalidException;
+import org.tm.pojo.User;
 import org.tm.service.AuthorizeService;
 import org.tm.service.RelationService;
 import org.tm.service.UserService;
@@ -30,43 +28,44 @@ public class UserController {
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public UserLoginResponse register(@RequestParam(value = "username") String username,
+    public Response register(@RequestParam(value = "username") String username,
                          @RequestParam(value = "password") String password ){
         if(!StringUtils.hasLength(username) || !StringUtils.hasLength(password)){
             throw new ParameterInvalidException("参数为空");
         }
-        UserDTO userDto = new UserDTO();
-        userDto.setUsername(username);
-        userDto.setPassword(password);
-        authorizeService.register(userDto);
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
+        authorizeService.register(user);
 
-        String token = JwtUtil.createToken(userDto);
-        UserLoginResponse response = new UserLoginResponse();
-        response.setToken(token);
-        response.setUserId(userDto.getUserId());
-        response.setResponse(new Response(0,"注册成功"));
+        String token = JwtUtil.createToken(user);
+        Response response = Response.success();
+        response.put("token", token);
+        response.put("user_id", user.getUserId());
         return response;
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public UserLoginResponse login(@RequestParam("username") String username,
+    public Response login(@RequestParam("username") String username,
                          @RequestParam("password") String password ){
         if(!StringUtils.hasLength(username) || !StringUtils.hasLength(password)) {
             throw new ParameterInvalidException("参数为空");
         }
-
-        UserDTO userDto = new UserDTO();
-        userDto.setUsername(username);
-        userDto.setPassword(password);
-
-        UserLoginResponse response = authorizeService.login(userDto);
-        userDto.setUserId(response.getUserId());
-
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
+        authorizeService.login(user);
+        Response response = Response.success();
+        if(user.getUserId() == null) {
+            response = Response.fail(-1, "用户名或密码错误");
+        }
+        response.put("token", JwtUtil.createToken(user));
+        response.put("user_id", user.getUserId());
         return response;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public UserResponse getUserInfo(@RequestParam("user_id") Long userId,
+    public Response getUserInfo(@RequestParam("user_id") Long userId,
                                     @RequestParam(value = "token", required = false)
                                             String token) {
 
@@ -75,25 +74,16 @@ public class UserController {
             viewerId = JwtUtil.getUserId(token);
         }
 
-        UserDTO userDTO;
-        UserDTO userInfo = userService.getUserInfoById(userId);
+        User userInfo = userService.getUserInfoById(userId);
 
         boolean isFollow;
         isFollow = relationService.checkIfAIsFollowB(viewerId, userId)
                 .orElse(false);
+        userInfo.setIsFollow(isFollow);
+        Response response = Response.success();
 
-        UserResponse userResponse = new UserResponse();
-        Response response = new Response(0, "请求成功");
-        userResponse.setResponse(response);
-        userDTO = new UserDTO(
-                userInfo.getUserId(),
-                userInfo.getUsername(),
-                userInfo.getFollowCount(),
-                userInfo.getFollowerCount(),
-                isFollow
-        );
-        userResponse.setUser(userDTO);
-        return userResponse;
+        response.put("user", userInfo);
+        return response;
     }
 
 }

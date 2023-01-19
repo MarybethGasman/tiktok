@@ -5,9 +5,7 @@ import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.mapping.FetchType;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
-import org.tm.dto.CommentDTO;
-import org.tm.po.CommentPO;
+import org.tm.pojo.Comment;
 
 import java.util.Date;
 import java.util.List;
@@ -20,12 +18,12 @@ public interface CommentRepository {
             "values(#{userId},#{videoId},#{content})")
     @Options(useGeneratedKeys = true, keyProperty = "commentId", keyColumn = "comment_id")
     @CacheEvict(value = "comments", key = "#commentPO.videoId")
-    void insert(CommentPO commentPO);
+    void insert(Comment comment);
 
     @Update("update comment set is_deleted = #{isDeleted} " +
-            "where comment_id = #{commentPO.commentId}")
+            "where comment_id = #{comment.commentId}")
     @CacheEvict(value = "comments", key = "#commentPO.videoId")
-    void updateIsDeleted(CommentPO commentPO, boolean isDeleted);
+    void updateIsDeleted(Comment comment, boolean isDeleted);
 
     @Results(value = {
             @Result(property = "user",
@@ -36,9 +34,9 @@ public interface CommentRepository {
                     column = "create_time",
                     javaType = Date.class)
     })
-    @Select("select comment_id as id, user_id, video_id, content, create_time " +
+    @Select("select comment_id, user_id, video_id, content, create_time " +
             "from comment " +
             "where video_id = #{videoId} and is_deleted = 0")
     @Cacheable(value = "comments", key = "#videoId")
-    List<CommentDTO> selectCommentListByVideoId(Long videoId);
+    List<Comment> selectCommentListByVideoId(Long videoId);
 }

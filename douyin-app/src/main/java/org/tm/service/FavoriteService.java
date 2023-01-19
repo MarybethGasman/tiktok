@@ -2,9 +2,9 @@ package org.tm.service;
 
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
-import org.tm.dto.UserDTO;
-import org.tm.dto.VideoDTO;
-import org.tm.po.FavoritePO;
+import org.tm.pojo.Favorite;
+import org.tm.pojo.User;
+import org.tm.pojo.Video;
 import org.tm.repository.FavoriteRepository;
 import org.tm.repository.RelationRepository;
 import org.tm.repository.VideoRepository;
@@ -30,32 +30,32 @@ public class FavoriteService {
     }
 
     public void addFavorite(Long userId, Long videoId) {
-        FavoritePO favoritePO = new FavoritePO();
-        favoritePO.setUserId(userId);
-        favoritePO.setVideoId(videoId);
+        Favorite favorite = new Favorite();
+        favorite.setUserId(userId);
+        favorite.setVideoId(videoId);
         try {
-            favoriteRepository.insert(favoritePO);
+            favoriteRepository.insert(favorite);
         }catch (DuplicateKeyException e) {
-            favoriteRepository.updateIsDeleted(favoritePO,false);
+            favoriteRepository.updateIsDeleted(favorite,false);
         }
         videoRepository.addFavoriteCount(videoId, 1);
     }
 
 
     public void removeFavorite(Long userId, Long videoId) {
-        FavoritePO favoritePO = new FavoritePO();
-        favoritePO.setUserId(userId);
-        favoritePO.setVideoId(videoId);
-        favoriteRepository.updateIsDeleted(favoritePO,true);
+        Favorite favorite = new Favorite();
+        favorite.setUserId(userId);
+        favorite.setVideoId(videoId);
+        favoriteRepository.updateIsDeleted(favorite,true);
         videoRepository.addFavoriteCount(videoId, -1);
     }
 
-    public List<VideoDTO> getFavoriteVideoList(Long userId, Long viewerId) {
+    public List<Video> getFavoriteVideoList(Long userId, Long viewerId) {
 
         List<Long> favoriteVideoIdList =
                 favoriteRepository.getFavoriteVideoIdList(userId);
 
-        List<VideoDTO> videoList = videoRepository
+        List<Video> videoList = videoRepository
                 .selectVideoListByVideoIdList(favoriteVideoIdList);
         if(viewerId != null) {
 
@@ -67,9 +67,9 @@ public class FavoriteService {
                     favoriteRepository.getFavoriteVideoIdList(viewerId);
 
             videoList = videoList.stream().map((videoDTO -> {
-                videoDTO.setFavorite(viewerFavoriteVideoIdList.contains(videoDTO.getId()));
-                UserDTO author = videoDTO.getAuthor();
-                author.setFollow(followingIdList.contains(author.getUserId()));
+                videoDTO.setIsFavorite(viewerFavoriteVideoIdList.contains(videoDTO.getId()));
+                User author = videoDTO.getAuthor();
+                author.setIsFollow(followingIdList.contains(author.getUserId()));
                 return videoDTO;
             })).collect(Collectors.toList());
         }
