@@ -8,6 +8,9 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+
+CREATE DATABASE `douyin` CHARACTER SET 'utf8mb4';
+
 CREATE TABLE `video` (
      `video_id` bigint unsigned NOT NULL AUTO_INCREMENT,
      `user_id` bigint DEFAULT NULL,

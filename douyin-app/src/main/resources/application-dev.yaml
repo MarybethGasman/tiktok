@@ -1,7 +1,8 @@
 ffmpeg:
   path: "C:\\Users\\Think\\Desktop\\qingxun\\ffmpeg.exe"
 video:
-  base: "http://192.168.43.166:8080/static/"
+  base: "http://192.168.43.166:8080/files/"
+
 
 spring:
 #  datasource:

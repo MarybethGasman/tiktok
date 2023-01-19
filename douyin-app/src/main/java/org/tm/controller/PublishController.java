@@ -1,6 +1,7 @@
 package org.tm.controller;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.ResourceUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.tm.pojo.Response;
 import org.tm.pojo.Video;
+import org.tm.service.FileSystemStorageService;
 import org.tm.service.VideoService;
 import org.tm.util.JwtUtil;
 import org.tm.util.FfmpegUtil;
@@ -46,10 +48,9 @@ public class PublishController {
         // uuid 生成文件名
         String uuid = String.valueOf(UUID.randomUUID());
 
+        FileSystemStorageService systemStorageService = new FileSystemStorageService();
         String fileName = uuid + fileSuffix;
-        String filePath = ResourceUtils.getURL("classpath:").getPath() + "public/" + fileName;
-        filePath = filePath.substring(1);
-        file.transferTo(new File(filePath));
+        systemStorageService.store(file, fileName);
 
 
         String coverUrl = fileName.substring(0,fileName.lastIndexOf(".")) + ".jpg";
@@ -59,7 +60,6 @@ public class PublishController {
         video.setCoverUrl(coverUrl);
         video.setUserId(userId);
 
-        FfmpegUtil.getCoverUrl(filePath);
         videoService.addVideo(video);
 
         return Response.success();
